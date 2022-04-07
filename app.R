@@ -10,7 +10,7 @@ bold = function(x) strong(x, .noWS = "outside")
 ital = function(x) em(x, .noWS = "outside")
 link = function(s, href = s) a(s, href = href, .noWS = "outside")
 
-registered_mutations<-read_delim("Mutaciones_mito.csv", delim=";")%>%names()
+registered_mutations<-if("Mutaciones_mito.csv"%in%list.files()){read_delim("Mutaciones_mito.csv", delim=";")%>%names()}
 
 #Funcion para transformar una mutacion
 transf_indiv=function(ht, type=type){
@@ -84,11 +84,15 @@ transf_ht<-function(datapath, type){
 }
 
 check_mutations<-function(vector){
+  if(!is.null(registered_mutations)){
   unidentified<-vector[!vector%in%registered_mutations]
   unidentified<-unidentified[!grepl("-(309|573).",unidentified)]
   if(!is_empty(unidentified)){
     print(paste0("Atencion! Mutaciones no registradas en la base de datos: ",paste0(unidentified, collapse=", ")))}else{
       print("OK!")}
+  }else{
+    print("No se encuentra ninguna base de datos para comparar")
+  }
 }
 
 ui <- fluidPage(
@@ -144,11 +148,6 @@ server <- function(input, output, session) {
 
   
   observeEvent(input$check, 
-              #showNotification("HOLA")
-              
-              #showNotification( check_mutations(unlist(data())), type="warning")
-              #showNotification(paste(registered_mutations, collapse=","))
-              #check_mutations(as.character(unlist(data()))[-c(1,2)])
               showModal(modalDialog(check_mutations(as.character(unlist(data()[,-c(1,2)])[!is.na(unlist(data()[,-c(1,2)]))]))))
   )
   
